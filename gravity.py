@@ -10,15 +10,31 @@ Controls:
     - "Right click" : Remove an object
 
 TODO:
-- Add argsparse
-- fix moving camera
+- Add argsparse done
+- fix moving camera ?
 - fix drift
 
 """
 
 import random
 
+import argparse
+
 import pygame
+
+def sum_of_list(l):
+  total = 0
+  for val in l:
+    total = total + val
+  return total
+
+parser = argparse.ArgumentParser(description="femorph")
+
+parser.add_argument(
+    "--add_objects", help="at the start add random particles", action="store_true"
+)
+
+args = parser.parse_args()
 
 
 def add_line(font, screen, text, x, y):
@@ -36,7 +52,7 @@ def distance(pos1, pos2):
     return (x + y) ** 0.5
 
 
-INIT_VEL_FAC = 3
+INIT_VEL_FAC = 1
 GRAVITY_CONST = 0.0005
 MAX_OBJECTS = 150
 MIN_VAL = 1
@@ -57,17 +73,16 @@ def main():
     # Set up the drawing window
     x_width, y_width = 1200, 650
     screen = pygame.display.set_mode([x_width, y_width])
-    dire = ""
-
     # these are the gravitational objects
     objects = []
-
+    
+    mean = [[600], [325]]
+    
     # optionally initialize with random objects
-    # for i in range(0, 100):
-    #     objects.append([random.random()*650, random.random()*650, random.random()*2*INIT_VEL_FAC - INIT_VEL_FAC, random.random()*2*INIT_VEL_FAC - INIT_VEL_FAC, 1, (random.random()*255, (random.random()*255, (random.random()*255)])
-
+    if args.add_objects:
+        for i in range(0, 100):
+            objects.append([random.random()*650, random.random()*650, random.random()*2*INIT_VEL_FAC - INIT_VEL_FAC, random.random()*2*INIT_VEL_FAC - INIT_VEL_FAC, 1, random.random()*255, random.random()*255, random.random()*255])
     mass = 1
-    objects = []
 
     running = True
     while running:
@@ -81,11 +96,11 @@ def main():
             pause = False
 
         # global center of gravity
-        sum1 = 1e-5
-        add1 = 1e-5
-        sum2 = 1e-5
-        cg = (sum1 / add1, sum2 / add1)
-
+        sum1 = 1
+        add1 = 1
+        sum2 = 1
+        cg = (sum_of_list(mean[0])/len(mean[0]), sum_of_list(mean[1])/len(mean[1]))
+        
         # increase or decrease mass if w or s is held
         if keys[pygame.K_w]:
             mass += 0.1
@@ -96,6 +111,10 @@ def main():
 
         if mass < 1:
             mass = 1
+        
+        for i in objects:
+            mean[0].append(i[0])
+            mean[1].append(i[1])
 
         mouse_held = pygame.mouse.get_pressed()
         mx, my = pygame.mouse.get_pos()
@@ -109,8 +128,8 @@ def main():
                     and i[0] < (mx + cg[0] - x_width // 2) + 10
                 ):
                     if (
-                        i[1] > (my + cg[0] - y_width // 2) - 10
-                        and i[1] < (my + cg[0] - y_width // 2) + 10
+                        i[1] > (my + cg[1] - y_width // 2) - 10
+                        and i[1] < (my + cg[1] - y_width // 2) + 10
                     ):
                         objects.remove(i)
 
@@ -204,6 +223,9 @@ def main():
 
         # Flip the display
         pygame.display.flip()
+        
+        if mean == [[600], [325]]:
+            mean = [[600], [325]]
 
     # Done! Time to quit.
     pygame.quit()
