@@ -2,6 +2,9 @@
 
 Simple solar system like "gravity" simulator using [pygame](https://www.pygame.org/)
 
+![gravity.py](demo.gif)
+
+
 ### Installation
 
 First, clone this repository with:
